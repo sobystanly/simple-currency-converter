@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  rules:
+    - host: my-rates.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/convert"
+            backend:
+              service:
+                name: exchange-rates-service
+                port:
+                  number: 5678

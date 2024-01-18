@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: exchange-rates
+  name: exchange-rates
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: exchange-rates
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: exchange-rates
+    spec:
+      containers:
+        - image: localhost:5001/exchange-rates:1.0.0
+          name: exchange-rates
+          ports:
+            - containerPort: 8001
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+status: {}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: exchange-rates-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: exchange-rates
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
